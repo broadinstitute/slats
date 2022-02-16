@@ -15,10 +15,15 @@ fn show_metadata(path: &Path) -> Result<(), Error> {
         let row_group = metadata.row_group(i_row_group);
         let n_cols = row_group.num_columns();
         println!("Row group {} has {} columns.", i_row_group, n_cols);
-        for i_col in 0 .. n_cols {
+        for i_col in 0..n_cols {
             let col = row_group.column(i_col);
-            println!("Column {} of row group {} has name {}.", i_col, i_row_group,
-                     col.column_descr().name());
+            let col_name = col.column_descr().name();
+            let phys_type_name = col.column_descr().physical_type().to_string();
+            let log_type_name = col.column_descr().logical_type()
+                .map(|log_type| { format!("{:?}", log_type) })
+                .unwrap_or_else(|| String::from("[none]"));
+            println!("Column {} of row group {} has name {}, physical type {} and logical type {}.",
+                     i_col, i_row_group, col_name, phys_type_name, log_type_name);
         }
     }
     Ok(())
