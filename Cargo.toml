@@ -1,0 +1,16 @@
+[package]
+name = "slats"
+description = "App to browse and extract data from parquet files"
+version = "0.0.1"
+authors = ["Oliver Ruebenacker <oliverr@broadinstitute.org>"]
+edition = "2021"
+readme = "README.md"
+repository = "https://github.com/broadinstitute/slats"
+license = "BSD-3-Clause"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+fs-err = "2.6.0"
+parquet = "9.0.2"
+
