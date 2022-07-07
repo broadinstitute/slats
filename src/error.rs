@@ -2,8 +2,17 @@ use std::fmt::{Display, Formatter};
 use parquet::errors::ParquetError;
 
 pub(crate) enum Error {
+    String(String),
     Io(std::io::Error),
-    Parquet(ParquetError)
+    Parquet(ParquetError),
+}
+
+impl From<&str> for Error {
+    fn from(string: &str) -> Self { Error::from(String::from(string)) }
+}
+
+impl From<String> for Error {
+    fn from(string: String) -> Self { Error::String(string) }
 }
 
 impl From<std::io::Error> for Error {
@@ -21,6 +30,7 @@ impl From<ParquetError> for Error {
 impl Display for Error {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
+            Error::String(string) => { writeln!(f, "{}", string) }
             Error::Io(io_error) => { writeln!(f, "{}", io_error) }
             Error::Parquet(parquet_error) => { writeln!(f, "{}", parquet_error) }
         }
