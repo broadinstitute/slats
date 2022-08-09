@@ -12,5 +12,5 @@ license = "BSD-3-Clause"
 
 [dependencies]
 fs-err = "2.6.0"
-parquet = "9.0.2"
+parquet = "20.0.0"
 
