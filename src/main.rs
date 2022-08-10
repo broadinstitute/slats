@@ -1,18 +1,18 @@
 mod error;
 mod config;
 mod meta;
-mod read;
+mod join;
+mod data;
+mod inspect;
 
 use error::Error;
+use crate::config::Config;
 
 fn run() -> Result<(), Error> {
-    let files = config::get_files()?;
-    println!("Metadata for {}", &files.sum_stats);
-    meta::show_metadata(&files.sum_stats)?;
-    println!("Metadata for {}", &files.covariances);
-    meta::show_metadata(&files.covariances)?;
-    read::read(&files)?;
-    Ok(())
+    match config::get_config()? {
+        Config::Inspect(inspect_config) => { inspect::inspect(&inspect_config) }
+        Config::Join(join_config) => { join::join(&join_config) }
+    }
 }
 
 fn main() {
