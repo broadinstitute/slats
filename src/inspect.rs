@@ -33,11 +33,12 @@ pub(crate) fn read_sum_stats(sum_stats: &str) -> Result<(), Error> {
     for (i, row) in sum_stats_reader.get_row_iter(None)?.enumerate() {
         let sum_stat = SumStat::read(&row)?;
         if i < 30 {
-            println!("{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}", sum_stat.chr, sum_stat.pos,
-                     sum_stat.ref_allele, sum_stat.alt_allele, sum_stat.alt_ac, sum_stat.mac,
-                     sum_stat.maf, sum_stat.n, sum_stat.u, sum_stat.v)
+            println!("{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}", sum_stat.variant.chr,
+                     sum_stat.variant.pos, sum_stat.variant.ref_allele,
+                     sum_stat.variant.alt_allele, sum_stat.data.alt_ac, sum_stat.data.mac,
+                     sum_stat.data.maf, sum_stat.data.n, sum_stat.data.u, sum_stat.data.v)
         }
-        n_sum_stats = max(n_sum_stats, sum_stat.n);
+        n_sum_stats = max(n_sum_stats, sum_stat.data.n);
     }
     println!("Max n in sum stats is {}", n_sum_stats);
     Ok(())

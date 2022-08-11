@@ -3,17 +3,17 @@ use std::fs::File;
 use std::io::{BufWriter, Write};
 use parquet::file::reader::{FileReader, SerializedFileReader};
 use parquet::record::Row;
-use crate::config::JoinConfig;
-use crate::data::{Covariance, Indices};
+use crate::config::JoinSumConfig;
+use crate::data::{SumStat, Variant, VariantData};
 use crate::Error;
 
-pub(crate) fn join(config: &JoinConfig) -> Result<(), Error> {
-    let mut unmatched1: HashMap<Indices, f64> = HashMap::new();
-    let mut unmatched2: HashMap<Indices, f64> = HashMap::new();
+pub(crate) fn join(config: &JoinSumConfig) -> Result<(), Error> {
+    let mut unmatched1: HashMap<Variant, VariantData> = HashMap::new();
+    let mut unmatched2: HashMap<Variant, VariantData> = HashMap::new();
     let reader1 =
-        SerializedFileReader::new(File::open(&config.covariances1)?)?;
+        SerializedFileReader::new(File::open(&config.sum_stats1)?)?;
     let reader2 =
-        SerializedFileReader::new(File::open(&config.covariances2)?)?;
+        SerializedFileReader::new(File::open(&config.sum_stats2)?)?;
     let mut rows1 = reader1.get_row_iter(None)?;
     let mut rows2 = reader2.get_row_iter(None)?;
     let mut writer = BufWriter::new(File::create(&config.out)?);
@@ -36,20 +36,23 @@ pub(crate) fn join(config: &JoinConfig) -> Result<(), Error> {
     Ok(())
 }
 
-fn join_row(record: &Row, these: &mut HashMap<Indices, f64>, those: &mut HashMap<Indices, f64>,
+fn join_row(record: &Row, these: &mut HashMap<Variant, VariantData>,
+            those: &mut HashMap<Variant, VariantData>,
             writer: &mut BufWriter<File>, this_first: bool)
             -> Result<(), Error> {
-    let Covariance { indices, value } = Covariance::read(record)?;
-    match those.remove(&indices) {
-        Some(that_value) => {
+    let SumStat { variant, data } = SumStat::read(record)?;
+    match those.remove(&variant) {
+        Some(that_data) => {
             if this_first {
-                writeln!(writer, "{}\t{}\t{}\t{}", indices.row, indices.col, value, that_value)?;
+                writeln!(writer, "{}\t{}\t{}\t{}\t{}\t{}", variant.chr, variant.pos,
+                         variant.ref_allele, variant.alt_allele, data.beta(), that_data.beta())?;
             } else {
-                writeln!(writer, "{}\t{}\t{}\t{}", indices.row, indices.col, that_value, value)?;
+                writeln!(writer, "{}\t{}\t{}\t{}\t{}\t{}", variant.chr, variant.pos,
+                         variant.ref_allele, variant.alt_allele, that_data.beta(), data.beta())?;
             }
         }
         None => {
-            these.insert(indices, value);
+            these.insert(variant, data);
         }
     }
     Ok(())
