@@ -1,6 +1,11 @@
 use std::fs::File;
 use parquet::file::reader::{FileReader, SerializedFileReader};
+use crate::config::MetaConfig;
 use crate::Error;
+
+pub(crate) fn meta(config: &MetaConfig) -> Result<(), Error> {
+    show_metadata(&config.file)
+}
 
 pub(crate) fn show_metadata(path: &str) -> Result<(), Error> {
     let file = File::open(path)?;

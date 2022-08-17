@@ -11,6 +11,7 @@ use crate::config::Config;
 
 fn run() -> Result<(), Error> {
     match config::get_config()? {
+        Config::Meta(meta_config) => { meta::meta(&meta_config) }
         Config::Inspect(inspect_config) => { inspect::inspect(&inspect_config) }
         Config::JoinCov(join_cov_config) => { join_cov::join(&join_cov_config) }
         Config::JoinSum(join_sum_config) => { join_sum::join(&join_sum_config) }

@@ -3,9 +3,14 @@ use clap::{arg, Command, command};
 use crate::Error;
 
 pub(crate) enum Config {
+    Meta(MetaConfig),
     Inspect(InspectConfig),
     JoinCov(JoinCovConfig),
     JoinSum(JoinSumConfig),
+}
+
+pub(crate) struct MetaConfig {
+    pub(crate) file: String,
 }
 
 pub(crate) struct InspectConfig {
@@ -26,6 +31,7 @@ pub(crate) struct JoinSumConfig {
 }
 
 pub(crate) fn get_config() -> Result<Config, Error> {
+    const META: &str = "meta";
     const INSPECT: &str = "inspect";
     const JOIN_COV: &str = "join_cov";
     const JOIN_SUM: &str = "join_sum";
@@ -34,11 +40,15 @@ pub(crate) fn get_config() -> Result<Config, Error> {
         .subcommand_required(true)
         .arg_required_else_help(true)
         .subcommand(
-            Command::new(INSPECT)
-                .about("Inspect files.")
-                .arg(arg!(-s --sum_stats <FILE> "Sum stats file").required(false))
-                .arg(arg!(-c --covariances <FILE> "Covariances file").required(false))
+            Command::new(META)
+                .about("Read meta data from file.")
+                .arg(arg!(-f --file <FILE> "File"))
         ).subcommand(
+        Command::new(INSPECT)
+            .about("Inspect files.")
+            .arg(arg!(-s --sum_stats <FILE> "Sum stats file").required(false))
+            .arg(arg!(-c --covariances <FILE> "Covariances file").required(false))
+    ).subcommand(
         Command::new(JOIN_COV)
             .about("Join two covariances files.")
             .arg(arg!(-i --covariances1 <FILE> "Covariances file 1"))
@@ -53,6 +63,14 @@ pub(crate) fn get_config() -> Result<Config, Error> {
     ).get_matches();
     let matches = matches.subcommand();
     match matches {
+        Some((META, matches)) => {
+            let file =
+                String::from(
+                    matches.value_of("file")
+                        .ok_or_else(|| Error::from("Missing argument 'file'."))?
+                );
+            Ok(Config::Meta(MetaConfig { file }))
+        }
         Some((INSPECT, matches)) => {
             let sum_stats = matches.value_of("sum_stats").map(String::from);
             let covariances = matches.value_of("covariances").map(String::from);
@@ -96,14 +114,14 @@ pub(crate) fn get_config() -> Result<Config, Error> {
         }
         Some((subcommand, _)) => {
             Err(Error::from(
-                format!("{} is not a valid subcommand. Valid subcommands are {}, {} and {}.",
-                        subcommand, INSPECT, JOIN_COV, JOIN_SUM)
+                format!("{} is not a valid subcommand. Valid subcommands are \
+                {}, {}, {} and {}.", subcommand, META, INSPECT, JOIN_COV, JOIN_SUM)
             ))
         }
         None => {
             Err(Error::from(
-                format!("Missing subcommand. Valid subcommands are {}, {} and {}.", INSPECT,
-                        JOIN_COV, JOIN_SUM)
+                format!("Missing subcommand. Valid subcommands are {}, {}, {} and {}.",
+                        META, INSPECT, JOIN_COV, JOIN_SUM)
             ))
         }
     }

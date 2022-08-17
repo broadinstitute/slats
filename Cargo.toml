@@ -1,7 +1,7 @@
 [package]
 name = "slats"
 description = "App to browse and extract data from parquet files"
-version = "0.0.2"
+version = "0.1.0"
 authors = ["Oliver Ruebenacker <oliverr@broadinstitute.org>"]
 edition = "2021"
 readme = "README.md"
